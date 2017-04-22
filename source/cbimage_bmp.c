@@ -99,9 +99,9 @@ cbmp_header cbmp_get_info(FILE *handle)
 
 
 
-void cbmp_form_info(uint8_t form[54], cbimage_t info)
+void cbmp_form_info(uint8_t form[54], cbimage_t info, int bpp)
 {	
-	off_t bmp_row = (((info.bpp * info.width + 31) >> 5) << 2);
+	off_t bmp_row = (((bpp * info.width + 31) >> 5) << 2);
 	size_t bmp_data = bmp_row * info.height;
 	
 	memset(form, 0, 54);
@@ -113,7 +113,7 @@ void cbmp_form_info(uint8_t form[54], cbimage_t info)
 	*((uint32_t*)&form[18]) = info.width;
 	*((uint32_t*)&form[22]) = info.height;
 	*((uint16_t*)&form[26]) = 1;
-	*((uint16_t*)&form[28]) = info.bpp;
+	*((uint16_t*)&form[28]) = bpp;
 	*((int32_t*)&form[38])	= 64;
 	*((int32_t*)&form[42])	= 64;
 }
@@ -156,7 +156,7 @@ cbimage_t *cbimage_load_bmp(char *filename)
 	
 	fseek(handle, header.pointer_data, SEEK_SET);
 	
-	loaded_image = cbimage_create(header.width, header.height, header.bpp, CBIMAGE_RGB);
+	loaded_image = cbimage_create(header.width, header.height, CBIMAGE_RGB);
 	
 	for(current_row = 0; current_row < header.height; current_row++)
 	{
@@ -165,9 +165,13 @@ cbimage_t *cbimage_load_bmp(char *filename)
 			uint8_t color[3];
 			fread(color, sizeof(uint8_t), 3, handle);
 			
+			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = color[0] << 8;
+			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = color[1] << 8;
+			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = color[2] << 8;
+			/*
 			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3 + 2] = color[0];
 			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3 + 1] = color[1];
-			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3] = color[2];
+			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3] = color[2];*/
 			
 		}
 		fseek(handle, bmp_padding, SEEK_CUR);
@@ -182,12 +186,12 @@ cbimage_t *cbimage_load_bmp(char *filename)
 
 
 
-int cbimage_save_bmp(char *filename, cbimage_t image)
+int cbimage_save_bmp(char *filename, cbimage_t image, int bpp)
 {
 	FILE 		*handle;
 	uint8_t header[54];
 	uint8_t zeros[3] = {0};
-	off_t 	bmp_padding = (((image.bpp * image.width + 31) >> 5) << 2) - (image.width * (image.bpp >> 3));
+	off_t 	bmp_padding = (((bpp * image.width + 31) >> 5) << 2) - (image.width * (bpp >> 3));
 	size_t	current_row, current_col;
 	
 	handle = fopen(filename, "wb");
@@ -198,16 +202,16 @@ int cbimage_save_bmp(char *filename, cbimage_t image)
 		return -1;
 	}
 	
-	cbmp_form_info(header, image);
+	cbmp_form_info(header, image, bpp);
 	
 	fwrite(header,sizeof(uint8_t), 54, handle);
 	for(current_row = 0; current_row < image.height; current_row++)
 	{
 		for(current_col = 0; current_col < image.width; current_col++)
 		{
-			fputc(image.data[(image.height - current_row - 1) * image.width * 3 + current_col * 3 + 2],handle);
-			fputc(image.data[(image.height - current_row - 1) * image.width * 3 + current_col * 3 + 1],handle);
-			fputc(image.data[(image.height - current_row - 1) * image.width * 3 + current_col * 3],handle);
+			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].b >> 8,handle);
+			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].g >> 8,handle);
+			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].r >> 8,handle);
 		}
 		fwrite(zeros,sizeof(uint8_t), bmp_padding, handle);
 	}
