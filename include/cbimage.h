@@ -33,6 +33,9 @@
 #define CBIMAGE_INDEX_W(width, bpp, x, y) ((y) * width * (bpp >> 3) + (x) * (bpp >> 3))
 
 enum {
+	CBIMAGE_1BPP = 1,
+	CBIMAGE_2BPP = 2,
+	CBIMAGE_4BPP = 4,
 	CBIMAGE_8BPP = 8,
 	CBIMAGE_16BPP = 16,
 	CBIMAGE_24BPP = 24,
@@ -70,6 +73,10 @@ typedef struct {
 	int bpp, type;
 } cbimage_t;
 
+typedef struct {
+	uint64_t color;
+	int bpp;
+} cbpixel_t;
 
 extern cbimage_t *cbimage_load_bmp(char *filename);
 extern int cbimage_save_bmp(char *filename, cbimage_t image);
@@ -82,5 +89,6 @@ extern int cbimage_free(cbimage_t *image);
 extern cbimage_t *cbimage_create(int width, int height, int bpp, int type);
 extern void cbimage_insert(cbimage_t *dst, cbimage_t *src, int x, int y);
 extern cbimage_t *cbimage_bond(int bond_type, int images, ...);
+extern 
 
 #endif /* LIB_C_BASIC_IMAGE_HEADER */

@@ -121,7 +121,6 @@ void cbmp_form_info(uint8_t form[54], cbimage_t info)
 
 
 
-
 cbimage_t *cbimage_load_bmp(char *filename) 
 {
 	/* Optimize in futher implementations
@@ -152,9 +151,11 @@ cbimage_t *cbimage_load_bmp(char *filename)
 		fclose(handle);
 		return NULL;
 	}
+	
 	bmp_padding = (((header.bpp * header.width + 31) >> 5) << 2) - (header.width * (header.bpp >> 3));
 	
 	fseek(handle, header.pointer_data, SEEK_SET);
+	
 	loaded_image = cbimage_create(header.width, header.height, header.bpp, CBIMAGE_RGB);
 	
 	for(current_row = 0; current_row < header.height; current_row++)
