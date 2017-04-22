@@ -8,10 +8,11 @@ endif()
 
 set(CMAKE_BUILD_TYPE Release CACHE Release "Build type" FORCE)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+file(GLOB_RECURSE sources  ${CMAKE_CURRENT_SOURCE_DIR}/source/*.c)
 
-add_library (${PROJECT_NAME} SHARED source/cbimage.c)
+
+add_library (${PROJECT_NAME} SHARED ${sources})
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-
 
 
 file(GLOB HEADERS include/*.h)
