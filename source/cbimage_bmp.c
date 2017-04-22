@@ -87,9 +87,9 @@ cbmp_header cbmp_get_info(FILE *handle)
 	info.height = *((uint32_t*)&bmp_header[22]);
 	info.bpp = *((uint16_t*)&bmp_header[28]);
 	
-	if(info.bpp != CBIMAGE_24BPP) {
+	/*if(info.bpp != CBIMAGE_24BPP) {
 		return info;
-	}
+	}*/
 	
 	info.valid = 1;
 	fseek(handle, cur_position, SEEK_SET);
@@ -162,19 +162,87 @@ cbimage_t *cbimage_load_bmp(char *filename)
 	{
 		for(current_col = 0; current_col < header.width; current_col++)
 		{
-			uint8_t color[3];
-			fread(color, sizeof(uint8_t), 3, handle);
+			uint8_t color[4];
 			
-			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = color[0] << 8;
-			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = color[1] << 8;
-			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = color[2] << 8;
-			/*
-			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3 + 2] = color[0];
-			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3 + 1] = color[1];
-			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3] = color[2];*/
+			
+			switch(header.bpp)
+			{
+				case CBIMAGE_1BPP:
+					fread(color, sizeof(uint8_t), 1, handle);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = (color[0] >> 7) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = (color[0] >> 7) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = (color[0] >> 7) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 6) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 6) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 6) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 5) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 5) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 5) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 4) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 4) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 4) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 3) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 3) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 3) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 2) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 2) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 2) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 1) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 1) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 1) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0]) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0]) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0]) & 0x1) ? (0xFFFF) : (0x0);
+					break;
+				case CBIMAGE_4BPP:
+					break;
+				case CBIMAGE_8BPP:
+					break;
+				case CBIMAGE_16BPP:
+					break;
+				case CBIMAGE_24BPP:
+					fread(color, sizeof(uint8_t), 3, handle);
+					
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = color[0] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = color[1] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = color[2] << 8;
+					fseek(handle, bmp_padding, SEEK_CUR);
+					break;
+				case CBIMAGE_32BPP:
+					fread(color, sizeof(uint8_t), 4, handle);
+					
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].a = color[0] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = color[1] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = color[2] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = color[3] << 8;
+					fseek(handle, bmp_padding, SEEK_CUR);
+					break;
+			}
 			
 		}
-		fseek(handle, bmp_padding, SEEK_CUR);
+		
 	}
 	
 	fclose(handle);
@@ -193,7 +261,8 @@ int cbimage_save_bmp(char *filename, cbimage_t image, int bpp)
 	uint8_t zeros[3] = {0};
 	off_t 	bmp_padding = (((bpp * image.width + 31) >> 5) << 2) - (image.width * (bpp >> 3));
 	size_t	current_row, current_col;
-	
+	uint64_t mono_color = 0;
+	uint8_t write_mono = 0, mono_wroten = 0;
 	handle = fopen(filename, "wb");
 	if(!handle)
 	{
@@ -209,11 +278,118 @@ int cbimage_save_bmp(char *filename, cbimage_t image, int bpp)
 	{
 		for(current_col = 0; current_col < image.width; current_col++)
 		{
-			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].b >> 8,handle);
-			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].g >> 8,handle);
-			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].r >> 8,handle);
+			mono_wroten = 0;
+			switch(bpp) 
+			{
+				case CBIMAGE_1BPP:
+					mono_color 	= (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].b \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].g \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].r;
+					mono_color /= 3;
+					write_mono = (mono_color > (0xffff / 2))?(0x1):(0x0) << 7;
+					current_col++;
+					mono_wroten = 1;
+					if(!(current_col < image.width))
+						break;
+					
+					mono_color 	= (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].b \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].g \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].r;
+					mono_color /= 3;
+					write_mono = (mono_color > (0xffff / 2))?(0x1):(0x0) << 6;
+					current_col++;
+					mono_wroten = 1;
+					if(!(current_col < image.width))
+						break;
+					
+					mono_color 	= (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].b \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].g \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].r;
+					mono_color /= 3;
+					write_mono = (mono_color > (0xffff / 2))?(0x1):(0x0) << 5;
+					current_col++;
+					mono_wroten = 1;
+					if(!(current_col < image.width))
+						break;
+					
+					mono_color 	= (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].b \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].g \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].r;
+					mono_color /= 3;
+					write_mono = (mono_color > (0xffff / 2))?(0x1):(0x0) << 4;
+					current_col++;
+					mono_wroten = 1;
+					if(!(current_col < image.width))
+						break;
+					
+					mono_color 	= (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].b \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].g \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].r;
+					mono_color /= 3;
+					write_mono = (mono_color > (0xffff / 2))?(0x1):(0x0) << 3;
+					current_col++;
+					mono_wroten = 1;
+					if(!(current_col < image.width))
+						break;
+					
+					mono_color 	= (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].b \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].g \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].r;
+					mono_color /= 3;
+					write_mono = (mono_color > (0xffff / 2))?(0x1):(0x0) << 2;
+					current_col++;
+					mono_wroten = 1;
+					if(!(current_col < image.width))
+						break;
+					
+					mono_color 	= (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].b \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].g \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].r;
+					mono_color /= 3;
+					write_mono = (mono_color > (0xffff / 2))?(0x1):(0x0) << 1;
+					current_col++;
+					mono_wroten = 1;
+					if(!(current_col < image.width))
+						break;
+					
+					mono_color 	= (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].b \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].g \
+											+ (uint32_t)image.data[(image.height - current_row - 1) * image.width + current_col].r;
+					mono_color /= 3;
+					write_mono = (mono_color > (0xffff / 2))?(0x1):(0x0);
+					mono_wroten = 1;
+					break;
+				case CBIMAGE_2BPP:
+					break;
+				case CBIMAGE_4BPP:
+					break;
+				case CBIMAGE_8BPP:
+					break;
+				case CBIMAGE_16BPP:
+					
+					break;
+				case CBIMAGE_24BPP:
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].b >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].g >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].r >> 8,handle);
+					fwrite(zeros,sizeof(uint8_t), bmp_padding, handle);
+					break;
+				case CBIMAGE_32BPP:
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].a >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].b >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].g >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].r >> 8,handle);
+					fwrite(zeros,sizeof(uint8_t), bmp_padding, handle);
+					break;
+			}
+			
+			if(mono_wroten)
+			{
+				fputc(write_mono, handle);
+			}
+			
 		}
-		fwrite(zeros,sizeof(uint8_t), bmp_padding, handle);
+		
 	}
 	fclose(handle);
 	return 0;

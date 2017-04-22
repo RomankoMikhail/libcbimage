@@ -67,21 +67,6 @@ int cbimage_mirror(cbimage_t *image, int mirror)
 				
 				image->data[t + i * image->width] = image->data[(image->width - t - 1) + i * image->width];
 				image->data[(image->width - t - 1) + i * image->width] = pixel;
-				/*uint8_t color[3];	
-				
-				
-				
-				color[0] = image->data[CBIMAGE_INDEX(image, t, i)];
-				color[1] = image->data[CBIMAGE_INDEX(image, t, i) + 1];
-				color[2] = image->data[CBIMAGE_INDEX(image, t, i) + 2];
-				
-				image->data[CBIMAGE_INDEX(image, t, i)] = image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i)];
-				image->data[CBIMAGE_INDEX(image, t, i) + 1] = image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i) + 1];
-				image->data[CBIMAGE_INDEX(image, t, i) + 2] = image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i) + 2];
-				
-				image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i)] = color[0];
-				image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i) + 1] = color[1];
-				image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i) + 2] = color[2];*/
 
 			}
 		}
@@ -98,19 +83,6 @@ int cbimage_mirror(cbimage_t *image, int mirror)
 				
 				image->data[t + i * image->width] = image->data[t + (image->height - i - 1) * image->width];
 				image->data[t + (image->height - i - 1) * image->width] = pixel;
-				/*uint8_t color[3];
-				
-				color[0] = image->data[CBIMAGE_INDEX(image, t, i)];
-				color[1] = image->data[CBIMAGE_INDEX(image, t, i) + 1];
-				color[2] = image->data[CBIMAGE_INDEX(image, t, i) + 2];
-				
-				image->data[CBIMAGE_INDEX(image, t, i)] = image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1))];
-				image->data[CBIMAGE_INDEX(image, t, i) + 1] = image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1)) + 1];
-				image->data[CBIMAGE_INDEX(image, t, i) + 2] = image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1)) + 2];
-				
-				image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1))] = color[0];
-				image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1)) + 1] = color[1];
-				image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1)) + 2] = color[2];*/
 
 			}
 		}
@@ -139,10 +111,6 @@ int cbimage_rotate(cbimage_t *image, int angle)
 			for(y = 0; y < image->height; y++)
 			{
 				new_image[image->height * x + y] = image->data[y * image->width + x];
-				/*
-				new_image[CBIMAGE_INDEX_W(image->height, image->bpp, y, x)] = image->data[CBIMAGE_INDEX(image, x, y)];
-				new_image[CBIMAGE_INDEX_W(image->height, image->bpp, y, x) + 1] = image->data[CBIMAGE_INDEX(image, x, y) + 1];
-				new_image[CBIMAGE_INDEX_W(image->height, image->bpp, y, x) + 2] = image->data[CBIMAGE_INDEX(image, x, y) + 2];*/
 			}
 		}
 		
@@ -259,10 +227,6 @@ void cbimage_insert(cbimage_t *dst, cbimage_t *src, int x, int y) {
 			if(((ix + x) < dst->width) && ((iy + y) < dst->height) && ((iy + y) >= 0) && ((iy + y) >= 0))
 			{
 				dst->data[(ix + x) + (iy + y) * dst->width] = src->data[ix + iy * src->width];
-				/*
-				dst->data[CBIMAGE_INDEX(dst, (ix + x), (iy + y))] = src->data[CBIMAGE_INDEX(src, ix, iy)];
-				dst->data[CBIMAGE_INDEX(dst, (ix + x), (iy + y)) + 1] = src->data[CBIMAGE_INDEX(src, ix, iy) + 1];
-				dst->data[CBIMAGE_INDEX(dst, (ix + x), (iy + y)) + 2] = src->data[CBIMAGE_INDEX(src, ix, iy) + 2]; */
 			}
 		}
 	}
