@@ -11,6 +11,13 @@ C Basic IMAGE library - very small library, which was created specifically for o
   * Overlay one image on top of another
   * Horizontal/Vertical bonding
 
+# Will be there new features?
+Yes, they will be!
+And maybe they are already exsists in experemental branch!
+
+# What will be soon added?
+There is plans for adding more advanced BMP support (monochrome import/export, compression, alpha channel support), add import/export for portable anymap format (PNM), basic shape drawing and etc.
+
 # May i assist you with your project?
 Yes, you can! Also, I need an interpreter, to arrange the documentation and make comments in the code. If you want to add new features or fix bugs -> create Pull Requsets.
 
