@@ -33,10 +33,18 @@
 #define CBIMAGE_INDEX_W(width, bpp, x, y) ((y) * width * (bpp >> 3) + (x) * (bpp >> 3))
 
 enum {
+	CBIMAGE_1BPP = 1,
+	CBIMAGE_2BPP = 2,
+	CBIMAGE_4BPP = 4,
 	CBIMAGE_8BPP = 8,
 	CBIMAGE_16BPP = 16,
 	CBIMAGE_24BPP = 24,
 	CBIMAGE_32BPP = 32
+};
+
+enum {
+	CBIMAGE_INVERSE_WITHOUT_ALPHA = 0,
+	CBIMAGE_INVERSE_ALL = 1
 };
 
 enum {
@@ -47,7 +55,7 @@ enum {
 enum {
 	CBIMAGE_MONOCHROME = 0,
 	CBIMAGE_RGB,
-	CBIMAGE_ALPHA
+	CBIMAGE_RGBA
 };
 
 enum {
@@ -65,22 +73,26 @@ enum {
 };
 
 typedef struct {
-	uint8_t *data;
+	uint16_t r, g, b, a;
+} cbpixel_t;
+
+typedef struct {
+	cbpixel_t *data;
 	size_t height, width;
-	int bpp, type;
+	int type;
 } cbimage_t;
 
-
 extern cbimage_t *cbimage_load_bmp(char *filename);
-extern int cbimage_save_bmp(char *filename, cbimage_t image);
+extern int cbimage_save_bmp(char *filename, cbimage_t image, int bpp);
 
-extern int cbimage_inverse(cbimage_t *image);
+extern int cbimage_inverse(cbimage_t *image, int type);
 extern int cbimage_mirror(cbimage_t *image, int mirror);
 extern int cbimage_rotate(cbimage_t *image, int angle);
 extern int cbimage_free(cbimage_t *image);
 
-extern cbimage_t *cbimage_create(int width, int height, int bpp, int type);
+extern cbimage_t *cbimage_create(int width, int height, int type);
 extern void cbimage_insert(cbimage_t *dst, cbimage_t *src, int x, int y);
 extern cbimage_t *cbimage_bond(int bond_type, int images, ...);
+extern 
 
 #endif /* LIB_C_BASIC_IMAGE_HEADER */

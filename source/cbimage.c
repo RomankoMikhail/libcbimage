@@ -29,14 +29,21 @@
 #include <stdlib.h>
 
 
-int cbimage_inverse(cbimage_t *image)
+int cbimage_inverse(cbimage_t *image, int type)
 {
 	size_t i;
 	assert(image != NULL);
 	
-	for(i = 0; i < image->height * image->width * ((image->bpp) >> 3); i++)
+	for(i = 0; i < image->height * image->width; i++)
 	{
-		image->data[i] = 0xff - image->data[i];
+		image->data[i].r = 0xFFFF - image->data[i].r;
+		image->data[i].g = 0xFFFF - image->data[i].g;
+		image->data[i].b = 0xFFFF - image->data[i].b;
+		
+		if(type == CBIMAGE_INVERSE_ALL)
+		{
+			image->data[i].a = 0xFFFF - image->data[i].a;
+		}
 	}
 	return 0;
 }
@@ -56,7 +63,13 @@ int cbimage_mirror(cbimage_t *image, int mirror)
 		{
 			for(t = 0; t < (image->width >> 1); t++)
 			{
-				uint8_t color[3];	
+				cbpixel_t pixel = image->data[t + i * image->width];
+				
+				image->data[t + i * image->width] = image->data[(image->width - t - 1) + i * image->width];
+				image->data[(image->width - t - 1) + i * image->width] = pixel;
+				/*uint8_t color[3];	
+				
+				
 				
 				color[0] = image->data[CBIMAGE_INDEX(image, t, i)];
 				color[1] = image->data[CBIMAGE_INDEX(image, t, i) + 1];
@@ -68,7 +81,7 @@ int cbimage_mirror(cbimage_t *image, int mirror)
 				
 				image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i)] = color[0];
 				image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i) + 1] = color[1];
-				image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i) + 2] = color[2];
+				image->data[CBIMAGE_INDEX(image,(image->width - t - 1), i) + 2] = color[2];*/
 
 			}
 		}
@@ -80,7 +93,12 @@ int cbimage_mirror(cbimage_t *image, int mirror)
 		{
 			for(i = 0; i < (image->height >> 1); i++)
 			{
-				uint8_t color[3];
+				
+				cbpixel_t pixel = image->data[t + i * image->width];
+				
+				image->data[t + i * image->width] = image->data[t + (image->height - i - 1) * image->width];
+				image->data[t + (image->height - i - 1) * image->width] = pixel;
+				/*uint8_t color[3];
 				
 				color[0] = image->data[CBIMAGE_INDEX(image, t, i)];
 				color[1] = image->data[CBIMAGE_INDEX(image, t, i) + 1];
@@ -92,7 +110,7 @@ int cbimage_mirror(cbimage_t *image, int mirror)
 				
 				image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1))] = color[0];
 				image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1)) + 1] = color[1];
-				image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1)) + 2] = color[2];
+				image->data[CBIMAGE_INDEX(image, t, (image->height - i - 1)) + 2] = color[2];*/
 
 			}
 		}
@@ -113,16 +131,18 @@ int cbimage_rotate(cbimage_t *image, int angle)
 	} 
 	else 
 	{
-		uint8_t *new_image = calloc(1, sizeof(uint8_t) * image->width * image->height * image->bpp);
+		cbpixel_t *new_image = calloc(1, sizeof(cbpixel_t) * image->width * image->height);
 		size_t x,y;
 		
 		for(x = 0; x < image->width; x++)
 		{
 			for(y = 0; y < image->height; y++)
 			{
+				new_image[image->height * x + y] = image->data[y * image->width + x];
+				/*
 				new_image[CBIMAGE_INDEX_W(image->height, image->bpp, y, x)] = image->data[CBIMAGE_INDEX(image, x, y)];
 				new_image[CBIMAGE_INDEX_W(image->height, image->bpp, y, x) + 1] = image->data[CBIMAGE_INDEX(image, x, y) + 1];
-				new_image[CBIMAGE_INDEX_W(image->height, image->bpp, y, x) + 2] = image->data[CBIMAGE_INDEX(image, x, y) + 2];
+				new_image[CBIMAGE_INDEX_W(image->height, image->bpp, y, x) + 2] = image->data[CBIMAGE_INDEX(image, x, y) + 2];*/
 			}
 		}
 		
@@ -172,14 +192,14 @@ cbimage_t *cbimage_bond(int bond_type, int num_images, ...) {
 	cbimage_t *out;
 	
 	if(bond_type == CBIMAGE_BOND_HORIZONTAL) {
-		out = cbimage_create(width_sum, height_max, CBIMAGE_24BPP, CBIMAGE_RGB);
+		out = cbimage_create(width_sum, height_max, CBIMAGE_RGB);
 		width_sum = 0;
 		for(i = 0; i < num_images; i++) {
 			cbimage_insert(out, images[i], width_sum, 0);
 			width_sum += images[i]->width;
 		}
 	} else {
-		out = cbimage_create(width_max, height_sum, CBIMAGE_24BPP, CBIMAGE_RGB);
+		out = cbimage_create(width_max, height_sum, CBIMAGE_RGB);
 		height_sum = 0;
 		for(i = 0; i < num_images; i++) {
 			cbimage_insert(out, images[i], 0, height_sum);
@@ -211,16 +231,15 @@ int cbimage_free(cbimage_t *image)
 
 
 
-cbimage_t *cbimage_create(int width, int height, int bpp, int type)
+cbimage_t *cbimage_create(int width, int height, int type)
 {
 	cbimage_t *new_image = calloc(1, sizeof(cbimage_t));
 	assert(new_image != NULL);
 
 	new_image->height = height;
 	new_image->width = width;
-	new_image->bpp = bpp;
 	new_image->type = type;
-	new_image->data = calloc(height * width * (bpp >> 3), sizeof(uint8_t));
+	new_image->data = calloc(height * width, sizeof(cbpixel_t));
 
 	assert(new_image->data != NULL);
 	return new_image;
@@ -239,9 +258,11 @@ void cbimage_insert(cbimage_t *dst, cbimage_t *src, int x, int y) {
 		{
 			if(((ix + x) < dst->width) && ((iy + y) < dst->height) && ((iy + y) >= 0) && ((iy + y) >= 0))
 			{
+				dst->data[(ix + x) + (iy + y) * dst->width] = src->data[ix + iy * src->width];
+				/*
 				dst->data[CBIMAGE_INDEX(dst, (ix + x), (iy + y))] = src->data[CBIMAGE_INDEX(src, ix, iy)];
 				dst->data[CBIMAGE_INDEX(dst, (ix + x), (iy + y)) + 1] = src->data[CBIMAGE_INDEX(src, ix, iy) + 1];
-				dst->data[CBIMAGE_INDEX(dst, (ix + x), (iy + y)) + 2] = src->data[CBIMAGE_INDEX(src, ix, iy) + 2]; 
+				dst->data[CBIMAGE_INDEX(dst, (ix + x), (iy + y)) + 2] = src->data[CBIMAGE_INDEX(src, ix, iy) + 2]; */
 			}
 		}
 	}
