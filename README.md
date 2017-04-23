@@ -1,10 +1,10 @@
 # libcbimage
 C Basic IMAGE library - very small library, which was created specifically for one purpose - simple work on images
 # Current version
-0.01 alpha
+0.03
 # Current features
 * Load/Save files
-  * Basic BMP support (BITMAPINFOHEADER supported - 40 byte sized DIB)
+  * Basic BMP support (BITMAPINFOHEADER (40 byte) and above) in monochorme, RGB and RGBA formats.
 * Basic manipulation of the image such as:
   * Horizontal/Vertical mirroring
   * Rotatation by 90°
@@ -13,6 +13,9 @@ C Basic IMAGE library - very small library, which was created specifically for o
 
 # May i assist you with your project?
 Yes, you can! Also, I need an interpreter, to arrange the documentation and make comments in the code. If you want to add new features or fix bugs -> create Pull Requsets.
+
+# Where i may found some documantation?
+It is stored in docs in RTF and HTML format + code have doxygen comments!
 
 # Copyright
 MIT License
