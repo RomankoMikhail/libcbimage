@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+/** @file */ 
 
 #include <cbimage.h>
 
@@ -29,7 +30,18 @@
 #include <string.h>
 #include <stdlib.h>
 
-
+/** 
+ * \brief BMP header container structure.
+ * 
+ * Basic structure for conaining basic bmp header parametrs such as
+ * 	- Width and Height
+ * 	- Bits Per Pixel
+ * 	- Pointer where pixel array begins
+ * 	- Valid flag
+ * 
+ * \warning This structure provides only *BASIC* handling of the bmp file.
+ * \warning This structure ment to be used *ONLY* internaly.
+ */
 typedef struct
 {
 	uint32_t	width;
@@ -40,9 +52,20 @@ typedef struct
 } cbmp_header;
 
 
-
+/** 
+ * \brief Gets file size in bytes.
+ * 
+ * Basic function for getting size of currently opened file by its FILE* handle
+ * 
+ * \param handle File handle
+ * \returns file size in bytes
+ * 
+ * \warning This function ment to be used *ONLY* internaly.
+ */
 off_t get_file_size(FILE *handle)
 {
+	assert(handle != NULL);
+	
 	off_t cur = ftell(handle), end;
 	fseek(handle, 0, SEEK_END);
 	end = ftell(handle);
@@ -53,10 +76,24 @@ off_t get_file_size(FILE *handle)
 
 
 
-
+/** 
+ * \brief Gets BMP header and returns it as structure
+ * 
+ * Function that retrives important information from the BMP file
+ * 	- Width and Height
+ * 	- Bits Per Pixel
+ * 	- Pointer where pixel array begins
+ * 
+ * \param *handle pass succsesfully opened file handle
+ * \return Returns BMP header
+ * 
+ * \warning This function ment to be used *ONLY* internaly.
+ */
 cbmp_header cbmp_get_info(FILE *handle)
 {
 	cbmp_header info = {0};
+	
+	assert(handle != NULL);
 	
 	off_t		file_size 		= get_file_size(handle);
 	off_t 	cur_position 	= ftell(handle);
@@ -87,7 +124,7 @@ cbmp_header cbmp_get_info(FILE *handle)
 	info.height = *((uint32_t*)&bmp_header[22]);
 	info.bpp = *((uint16_t*)&bmp_header[28]);
 	
-	if(info.bpp != CBIMAGE_24BPP) {
+	if((info.bpp != CBIMAGE_24BPP) && (info.bpp != CBIMAGE_32BPP) && (info.bpp != CBIMAGE_1BPP)) {
 		return info;
 	}
 	
@@ -98,9 +135,22 @@ cbmp_header cbmp_get_info(FILE *handle)
 
 
 
-
+/** 
+ * \brief Creates semi-valid BMP header
+ * 
+ * This function creates semi-valid BMP header using given parameters such as:
+ * 	- Width and Height
+ * 	- Bits Per Pixel
+ * 
+ * \param form[54] - byte array that represents BMP header with DIB
+ * \param info - image, from it we gets several attributes such as width and height 
+ * \param bpp - in what Bits Per Pixel format we need to save our image
+ * 
+ * \warning This function ment to be used *ONLY* internaly.
+ */
 void cbmp_form_info(uint8_t form[54], cbimage_t info, int bpp)
-{	
+{
+	assert(form != NULL);
 	off_t bmp_row = (((bpp * info.width + 31) >> 5) << 2);
 	size_t bmp_data = bmp_row * info.height;
 	
@@ -120,7 +170,9 @@ void cbmp_form_info(uint8_t form[54], cbimage_t info, int bpp)
 
 
 
-
+/** 
+ * This function reads BMP file and tries to load it into the memory.
+ */
 cbimage_t *cbimage_load_bmp(char *filename) 
 {
 	/* Optimize in futher implementations
@@ -147,7 +199,7 @@ cbimage_t *cbimage_load_bmp(char *filename)
 	
 	header = cbmp_get_info(handle);
 	if(!header.valid) {
-		fprintf(stderr,"[ERROR] file \"%s\": not valid\n",filename);
+		fprintf(stderr,"[ERROR] file \"%s\": not valid or unsupported\n",filename);
 		fclose(handle);
 		return NULL;
 	}
@@ -162,19 +214,85 @@ cbimage_t *cbimage_load_bmp(char *filename)
 	{
 		for(current_col = 0; current_col < header.width; current_col++)
 		{
-			uint8_t color[3];
-			fread(color, sizeof(uint8_t), 3, handle);
+			uint8_t color[4];
 			
-			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = color[0] << 8;
-			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = color[1] << 8;
-			loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = color[2] << 8;
-			/*
-			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3 + 2] = color[0];
-			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3 + 1] = color[1];
-			loaded_image->data[(header.height - current_row - 1) * header.width * 3 + current_col*3] = color[2];*/
+			
+			switch(header.bpp)
+			{
+				case CBIMAGE_1BPP:
+					fread(color, sizeof(uint8_t), 1, handle);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = (color[0] >> 7) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = (color[0] >> 7) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = (color[0] >> 7) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 6) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 6) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 6) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 5) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 5) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 5) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 4) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 4) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 4) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 3) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 3) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 3) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 2) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 2) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 2) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0] >> 1) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0] >> 1) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0] >> 1) & 0x1) ? (0xFFFF) : (0x0);
+					current_col++;
+					if(!(current_col < header.width))
+						break;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = ((color[0]) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = ((color[0]) & 0x1) ? (0xFFFF) : (0x0);
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = ((color[0]) & 0x1) ? (0xFFFF) : (0x0);
+					break;
+				case CBIMAGE_24BPP:
+					fread(color, sizeof(uint8_t), 3, handle);
+					
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = color[0] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = color[1] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = color[2] << 8;
+					fseek(handle, bmp_padding, SEEK_CUR);
+					break;
+				case CBIMAGE_32BPP:
+					fread(color, sizeof(uint8_t), 4, handle);
+					
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].a = color[0] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].b = color[1] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].g = color[2] << 8;
+					loaded_image->data[(header.height - current_row - 1) * header.width + current_col].r = color[3] << 8;
+					fseek(handle, bmp_padding, SEEK_CUR);
+					break;
+				default:
+					fprintf(stderr, "[CRITICAL ERROR] Unsupported BMP format during reading! THIS IS A BUG!\n");
+					exit(-1);
+					break;
+			}
 			
 		}
-		fseek(handle, bmp_padding, SEEK_CUR);
+		
 	}
 	
 	fclose(handle);
@@ -185,7 +303,10 @@ cbimage_t *cbimage_load_bmp(char *filename)
 
 
 
-
+/** 
+ * This function save image from the memory to the disk. You may specify 
+ * BPP option to choose in what format you want to save image.
+ */
 int cbimage_save_bmp(char *filename, cbimage_t image, int bpp)
 {
 	FILE 		*handle;
@@ -193,8 +314,16 @@ int cbimage_save_bmp(char *filename, cbimage_t image, int bpp)
 	uint8_t zeros[3] = {0};
 	off_t 	bmp_padding = (((bpp * image.width + 31) >> 5) << 2) - (image.width * (bpp >> 3));
 	size_t	current_row, current_col;
+	uint64_t mono_color = 0;
+	uint8_t write_mono = 0, mono_wroten = 0;
+	
+	if((bpp != CBIMAGE_24BPP) && (bpp != CBIMAGE_32BPP)) {
+		fprintf(stderr,"[ERROR] bpp format %d is not supported!\n", bpp);
+		return -1;
+	}
 	
 	handle = fopen(filename, "wb");
+	
 	if(!handle)
 	{
 		fprintf(stderr,"[ERROR] file \"%s\": ",filename);
@@ -209,11 +338,31 @@ int cbimage_save_bmp(char *filename, cbimage_t image, int bpp)
 	{
 		for(current_col = 0; current_col < image.width; current_col++)
 		{
-			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].b >> 8,handle);
-			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].g >> 8,handle);
-			fputc(image.data[(image.height - current_row - 1) * image.width + current_col].r >> 8,handle);
+			mono_wroten = 0;
+			write_mono = 0;
+			switch(bpp) 
+			{
+				case CBIMAGE_24BPP:
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].b >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].g >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].r >> 8,handle);
+					fwrite(zeros,sizeof(uint8_t), bmp_padding, handle);
+					break;
+				case CBIMAGE_32BPP:
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].a >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].b >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].g >> 8,handle);
+					fputc(image.data[(image.height - current_row - 1) * image.width + current_col].r >> 8,handle);
+					fwrite(zeros,sizeof(uint8_t), bmp_padding, handle);
+					break;
+				default:
+					fprintf(stderr, "[CRITICAL ERROR] Unsupported BMP format during writing! THIS IS A BUG!\n");
+					exit(-1);
+					break;
+			}
+			
 		}
-		fwrite(zeros,sizeof(uint8_t), bmp_padding, handle);
+		
 	}
 	fclose(handle);
 	return 0;

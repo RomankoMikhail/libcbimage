@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+/** @file */ 
+
 #ifndef LIB_C_BASIC_IMAGE_HEADER
 #define LIB_C_BASIC_IMAGE_HEADER
 
@@ -82,17 +84,106 @@ typedef struct {
 	int type;
 } cbimage_t;
 
+
+/** 
+ * \brief Reads BMP file a loads image into the memory
+ * 
+ * \warning Function cannot load 2, 4, 8 and 16 bit BMP files.
+ * \warning Function cannot read neither color table or ICC profiles.
+ * \bug Function missrepresent 1 bit BMP files and reades it as white and black, even if color table set for different colors
+ * 
+ * \param filename filename of the BMP file that ment to be readed
+ * \return a newly loaded image or NULL if somthing goes wrong
+ */
 extern cbimage_t *cbimage_load_bmp(char *filename);
+
+/** 
+ * \brief Saves image into BMP file
+ * 
+ * \warning Function cannot save 1, 2, 4, 8 and 16 bit BMP files.
+ * 
+ * \param filename the filename of the file to which you want to save the image
+ * \param image image that you want to save
+ * \param bpp - specifies Bits Per Pixel for the output file (CBIMAGE_24BPP for classic RGB BMP or CBIMAGE_32BPP for RGBA) 
+ * \return Returns 0 if succsesfull or -1 if failed
+ */
 extern int cbimage_save_bmp(char *filename, cbimage_t image, int bpp);
 
-extern int cbimage_inverse(cbimage_t *image, int type);
-extern int cbimage_mirror(cbimage_t *image, int mirror);
+/** 
+ * \brief Inverse colors of the image
+ * 
+ * \param image The image above which will be manipulated.
+ * \param type Type of the inversion:
+ * 	- CBIMAGE_INVERSE_WITHOUT_ALPHA - for classical inversion - without alpha channel
+ * 	- CBIMAGE_INVERSE_ALL - for inversion with alpha channel
+ */
+extern void cbimage_inverse(cbimage_t *image, int type);
+
+/** 
+ * \brief Mirrors the image
+ * 
+ * \param image image that you want to save
+ * \param bpp - specifies Bits Per Pixel for the output file (CBIMAGE_24BPP for classic RGB BMP or CBIMAGE_32BPP for RGBA) 
+ */
+extern void cbimage_mirror(cbimage_t *image, int mirror);
+
+/** 
+ * \brief Rotates image
+ * 
+ * \param image - image that you want to rotate
+ * \param angle - on what angle you want to rotate the image. Choose between:
+ * 	- CBIMAGE_90_DEG,
+ *	- CBIMAGE_180_DEG,
+ *	- CBIMAGE_240_DEG,
+ *	- CBIMAGE_M90_DEG,
+ *	- CBIMAGE_M180_DEG,
+ *	- CBIMAGE_M240_DEG.
+ * \return Returns 0 if succsesfull or -1 if failed
+ */
 extern int cbimage_rotate(cbimage_t *image, int angle);
+
+/** 
+ * \brief Free memory used by image
+ * 
+ * \param image - pointer to an image 
+ * \return This function allways returns 0, except times when you try to pass NULL pointer (in this case, there will be programm termination by assert)
+ */
 extern int cbimage_free(cbimage_t *image);
 
+
+/** 
+ * \brief Creates blank image
+ * 
+ * \param width - width of the new image
+ * \param height - height of the new image
+ * \param type - specifies image type with following options:
+ * 	- CBIMAGE_MONOCHROME - for monochrome image
+ * 	- CBIMAGE_RGB - for RGB image
+ * 	- CBIMAGE_RGBA - for RGB image with alpha channel
+ * \return Returns new image or NULL if error occures.
+ */
 extern cbimage_t *cbimage_create(int width, int height, int type);
+
+/** 
+ * \brief Overlay one image over another (PERMANENTLY)
+ * 
+ * 
+ * \param dst - image that you want overlay with other image
+ * \param src - image that will overlay *dst* image
+ * \param x - x coordinate of src image over dst
+ * \param y - y coordinate of src image over dst
+ */
 extern void cbimage_insert(cbimage_t *dst, cbimage_t *src, int x, int y);
+
+/** 
+ * \brief Creates new image from the given one
+ * 
+ * \param bond_type - specify a bond type (Vertical or Horizontal)
+ * \param images - how many images you want to bond
+ * \param ... - pass as arguments images that you want to bond
+ * \return Returns new image or NULL if error occures.
+ */
 extern cbimage_t *cbimage_bond(int bond_type, int images, ...);
-extern 
+
 
 #endif /* LIB_C_BASIC_IMAGE_HEADER */
