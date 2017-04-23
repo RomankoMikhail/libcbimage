@@ -4,7 +4,7 @@ C Basic IMAGE library - very small library, which was created specifically for o
 0.03
 # Current features
 * Load/Save files
-  * Basic BMP support (BITMAPINFOHEADER (40 byte) and above) in monochorme, RGB and RGBA formats.
+  * Basic BMP support (BITMAPINFOHEADER (40 byte) and above) in monochrome, RGB and RGBA formats.
 * Basic manipulation of the image such as:
   * Horizontal/Vertical mirroring
   * Rotatation by 90°
