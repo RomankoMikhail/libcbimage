@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+/** @file */ 
+
 #include <cbimage.h>
 
 #include <stdio.h>
@@ -29,7 +31,7 @@
 #include <stdlib.h>
 
 
-int cbimage_inverse(cbimage_t *image, int type)
+void cbimage_inverse(cbimage_t *image, int type)
 {
 	size_t i;
 	assert(image != NULL);
@@ -45,14 +47,13 @@ int cbimage_inverse(cbimage_t *image, int type)
 			image->data[i].a = 0xFFFF - image->data[i].a;
 		}
 	}
-	return 0;
 }
 
 
 
 
 
-int cbimage_mirror(cbimage_t *image, int mirror)
+void cbimage_mirror(cbimage_t *image, int mirror)
 {
 	size_t i,t;
 	
@@ -87,7 +88,6 @@ int cbimage_mirror(cbimage_t *image, int mirror)
 			}
 		}
 	}
-	return 1;
 }
 
 
@@ -104,6 +104,10 @@ int cbimage_rotate(cbimage_t *image, int angle)
 	else 
 	{
 		cbpixel_t *new_image = calloc(1, sizeof(cbpixel_t) * image->width * image->height);
+		
+		if(!new_image)
+			return -1;
+		
 		size_t x,y;
 		
 		for(x = 0; x < image->width; x++)
@@ -126,7 +130,7 @@ int cbimage_rotate(cbimage_t *image, int angle)
 			cbimage_mirror(image, CBIMAGE_MIRROR_VERTICALY);
 		}
 	}
-	return 1;
+	return 0;
 }
 
 
@@ -192,7 +196,7 @@ int cbimage_free(cbimage_t *image)
 	
 	free(image->data);
 	image->data = NULL;
-	return 1;
+	return 0;
 }
 
 

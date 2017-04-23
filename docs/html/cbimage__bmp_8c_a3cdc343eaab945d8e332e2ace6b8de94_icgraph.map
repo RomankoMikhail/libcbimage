@@ -1,0 +1,4 @@
+<map id="get_file_size" name="get_file_size">
+<area shape="rect" id="node2" href="$cbimage__bmp_8c.html#a6b2069255242cf33c0bb12bf821dc5db" title="Gets BMP header and returns it as structure. " alt="" coords="148,5,255,32"/>
+<area shape="rect" id="node3" href="$cbimage__bmp_8c.html#accf84cf059f25488e98a5af3823de05d" title="Reads BMP file a loads image into the memory. " alt="" coords="303,5,437,32"/>
+</map>

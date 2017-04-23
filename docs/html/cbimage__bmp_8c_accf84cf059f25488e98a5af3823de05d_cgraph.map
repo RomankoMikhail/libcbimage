@@ -1,0 +1,5 @@
+<map id="cbimage_load_bmp" name="cbimage_load_bmp">
+<area shape="rect" id="node2" href="$cbimage__bmp_8c.html#a6b2069255242cf33c0bb12bf821dc5db" title="Gets BMP header and returns it as structure. " alt="" coords="192,5,299,32"/>
+<area shape="rect" id="node4" href="$cbimage_8h.html#a61cd2cef8d08bbd894a7861be39db14e" title="Creates blank image. " alt="" coords="188,56,303,83"/>
+<area shape="rect" id="node3" href="$cbimage__bmp_8c.html#a3cdc343eaab945d8e332e2ace6b8de94" title="Gets file size in bytes. " alt="" coords="351,5,445,32"/>
+</map>

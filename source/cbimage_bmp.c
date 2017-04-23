@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+/** @file */ 
 
 #include <cbimage.h>
 
@@ -29,8 +30,18 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define SET_BIT(value, position) (value | (1 << position)) 
-
+/** 
+ * \brief BMP header container structure.
+ * 
+ * Basic structure for conaining basic bmp header parametrs such as
+ * 	- Width and Height
+ * 	- Bits Per Pixel
+ * 	- Pointer where pixel array begins
+ * 	- Valid flag
+ * 
+ * \warning This structure provides only *BASIC* handling of the bmp file.
+ * \warning This structure ment to be used *ONLY* internaly.
+ */
 typedef struct
 {
 	uint32_t	width;
@@ -41,9 +52,20 @@ typedef struct
 } cbmp_header;
 
 
-
+/** 
+ * \brief Gets file size in bytes.
+ * 
+ * Basic function for getting size of currently opened file by its FILE* handle
+ * 
+ * \param handle File handle
+ * \returns file size in bytes
+ * 
+ * \warning This function ment to be used *ONLY* internaly.
+ */
 off_t get_file_size(FILE *handle)
 {
+	assert(handle != NULL);
+	
 	off_t cur = ftell(handle), end;
 	fseek(handle, 0, SEEK_END);
 	end = ftell(handle);
@@ -54,10 +76,24 @@ off_t get_file_size(FILE *handle)
 
 
 
-
+/** 
+ * \brief Gets BMP header and returns it as structure
+ * 
+ * Function that retrives important information from the BMP file
+ * 	- Width and Height
+ * 	- Bits Per Pixel
+ * 	- Pointer where pixel array begins
+ * 
+ * \param *handle pass succsesfully opened file handle
+ * \return Returns BMP header
+ * 
+ * \warning This function ment to be used *ONLY* internaly.
+ */
 cbmp_header cbmp_get_info(FILE *handle)
 {
 	cbmp_header info = {0};
+	
+	assert(handle != NULL);
 	
 	off_t		file_size 		= get_file_size(handle);
 	off_t 	cur_position 	= ftell(handle);
@@ -99,9 +135,22 @@ cbmp_header cbmp_get_info(FILE *handle)
 
 
 
-
+/** 
+ * \brief Creates semi-valid BMP header
+ * 
+ * This function creates semi-valid BMP header using given parameters such as:
+ * 	- Width and Height
+ * 	- Bits Per Pixel
+ * 
+ * \param form[54] - byte array that represents BMP header with DIB
+ * \param info - image, from it we gets several attributes such as width and height 
+ * \param bpp - in what Bits Per Pixel format we need to save our image
+ * 
+ * \warning This function ment to be used *ONLY* internaly.
+ */
 void cbmp_form_info(uint8_t form[54], cbimage_t info, int bpp)
-{	
+{
+	assert(form != NULL);
 	off_t bmp_row = (((bpp * info.width + 31) >> 5) << 2);
 	size_t bmp_data = bmp_row * info.height;
 	
@@ -121,7 +170,9 @@ void cbmp_form_info(uint8_t form[54], cbimage_t info, int bpp)
 
 
 
-
+/** 
+ * This function reads BMP file and tries to load it into the memory.
+ */
 cbimage_t *cbimage_load_bmp(char *filename) 
 {
 	/* Optimize in futher implementations
@@ -252,7 +303,10 @@ cbimage_t *cbimage_load_bmp(char *filename)
 
 
 
-
+/** 
+ * This function save image from the memory to the disk. You may specify 
+ * BPP option to choose in what format you want to save image.
+ */
 int cbimage_save_bmp(char *filename, cbimage_t image, int bpp)
 {
 	FILE 		*handle;
